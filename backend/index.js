@@ -5,6 +5,7 @@ const colors = require("colors");
 const { connectDB } = require("./config/db");
 const mainRouter = require('./routes/index.js')
 const app = express()
+const PORT = 5000
 
 dotenv.config()
 
@@ -21,8 +22,7 @@ app.use('/api/v1', mainRouter)
 
 
 
-const PORT = 5000
-app.listen(5000, console.log(
+app.listen(PORT, console.log(
     `Server running in node port ${PORT}`.yellow.bold
 ))
 
