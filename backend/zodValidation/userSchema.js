@@ -12,4 +12,10 @@ const signInBody = z.object({
     password:z.string()
 })
 
-module.exports ={createUser, signInBody}
+const updateBody = z.object({
+    firstName:z.string().optional(),
+    lastName:z.string().optional(),
+    password:z.string().optional()
+})
+
+module.exports ={createUser, signInBody, updateBody}

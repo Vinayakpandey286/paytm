@@ -1,6 +1,6 @@
 const User = require("../models/userModel")
 const { generateToken } = require("../utils/generateToken")
-const { createUser, signInBody } = require("../zodValidation/userSchema")
+const { createUser, signInBody, updateBody } = require("../zodValidation/userSchema")
 
 const resgisterUser = async (req, res) => {
     // need to use bcrypt js to hash the password
@@ -70,4 +70,49 @@ const authUser = async (req, res) => {
 }
 
 
-module.exports = { resgisterUser, authUser }
+const updateUser = async (req, res) => {
+    const body = req.body
+    const { success } = updateBody.safeParse(body)
+    if (!success) {
+        return res.status(411).json({
+            message: 'Error while Updating'
+        })
+    }
+
+    try {
+        await User.updateOne({ _id: req.user._id }, body);
+        res.json({
+            message: "Updated successfully"
+        })
+    } catch (error) {
+        res.status(400).send({message:'Bad Request'})
+    }
+}
+
+const findUser = async (req, res) => {
+    const filter = req.query.filter || ""
+    const users = await User.find({
+        $or: [{
+            firstName: {
+                "$regex": filter
+            }
+        }, {
+            lastName: {
+                "$regex": filter
+            }
+        }]
+    })
+    if (users) {
+        res.json({
+            user: users.map(user => ({
+                username: user.username,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                _id: user._id
+            }))
+        })
+    }
+}
+
+
+module.exports = { resgisterUser, authUser, updateUser, findUser }
