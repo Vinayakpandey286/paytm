@@ -50,18 +50,15 @@ const authUser = async (req, res) => {
     }
 
     const user = await User.find({ userName })
-
-    if (user) {
-        if (password === user.password) {
-            return res.status(200).json({
-                message: 'User Successfully logged',
-                token: generateToken(user._id)
-            })
-        } else {
-            return res.status(400).json({
-                message: 'Wrong Password'
-            })
-        }
+    if (user && (await user.matchPassword(password))) {
+        res.json({
+            message: 'User Successfully logged',
+            token: generateToken(user._id)
+        });
+    } else {
+        return res.status(400).json({
+            message: 'Wrong Password'
+        })
     }
 
     return res.status(400).json({
@@ -85,7 +82,7 @@ const updateUser = async (req, res) => {
             message: "Updated successfully"
         })
     } catch (error) {
-        res.status(400).send({message:'Bad Request'})
+        res.status(400).send({ message: 'Bad Request' })
     }
 }
 
