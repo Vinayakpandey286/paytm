@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "./Button";
 import { routes } from "../utils/routes";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export const Users = () => {
   // Replace with backend call
@@ -18,7 +19,7 @@ export const Users = () => {
           },
         };
         const response = await axios.get(
-          `${routes.baseUrl}${routes.findUser}?filter=` +filter,
+          `${routes.baseUrl}${routes.findUser}?filter=` + filter,
           config
         );
         setUsers(response.data.user);
@@ -53,6 +54,11 @@ export const Users = () => {
 };
 
 function User({ user }) {
+  const navigate = useNavigate();
+
+  const handleSendMoney = () => {
+    navigate(`/send?userId=${user._id}&name=${user.firstName}`)
+  };
   return (
     <div className="flex justify-between">
       <div className="flex">
@@ -69,7 +75,7 @@ function User({ user }) {
       </div>
 
       <div className="flex flex-col justify-center h-ful">
-        <Button label={"Send Money"} />
+        <Button onClick={handleSendMoney} label={"Send Money"} />
       </div>
     </div>
   );
