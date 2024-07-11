@@ -5,6 +5,7 @@ import { Heading } from "../components/Heading";
 import { InputBox } from "../components/InputBox";
 import { SubHeading } from "../components/SubHeading";
 import axios from "axios";
+import { routes } from "../utils/routes";
 
 export const Signup = () => {
   const [firstName, setFirstName] = useState("");
@@ -13,12 +14,14 @@ export const Signup = () => {
   const [password, setPassword] = useState("");
 
   const registerUser = async () => {
-    await axios.post("http://localhost:5000/api/v1/user/signup", {
+    const response  = await axios.post(`${routes.baseUrl}${routes.signup}`, {
       email,
       firstName,
       lastName,
       password,
     });
+
+    localStorage.setItem("paytmToken",response.data.token)
   };
   return (
     <div className="bg-slate-300 h-screen flex justify-center">
