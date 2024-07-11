@@ -13,7 +13,7 @@ export const Signup = () => {
   const [password, setPassword] = useState("");
 
   const registerUser = async () => {
-    await axios.post("http://localhost:5000/api/v1/user/singup", {
+    await axios.post("http://localhost:5000/api/v1/user/signup", {
       email,
       firstName,
       lastName,
