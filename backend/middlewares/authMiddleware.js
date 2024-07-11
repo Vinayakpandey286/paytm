@@ -1,7 +1,9 @@
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const User = require('../models/userModel');
 
 const authMiddleware = async (req, res, next) => {
     let token;
+
 
     if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
         try {
@@ -12,6 +14,7 @@ const authMiddleware = async (req, res, next) => {
             next()
 
         } catch (error) {
+            console.log(error)
             res.status(401)
             throw new Error("Not Authorised, Token Failed")
         }

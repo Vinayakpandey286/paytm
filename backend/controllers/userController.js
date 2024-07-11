@@ -28,7 +28,7 @@ const resgisterUser = async (req, res) => {
     })
 
     await Account.create({
-        userId:user._id,
+        userId: user._id,
         balance: Math.floor(Math.random() * 10001)
     })
 
@@ -56,21 +56,23 @@ const authUser = async (req, res) => {
         })
     }
 
-    const user = await User.findOne({ email })
-    if (user && (await user.matchPassword(password))) {
-        res.json({
-            message: 'User Successfully logged',
-            token: generateToken(user._id)
-        });
-    } else {
+    try {
+        const user = await User.findOne({ email })
+        if (user && (await user.matchPassword(password))) {
+            res.json({
+                message: 'User Successfully logged',
+                token: generateToken(user._id)
+            });
+        } else {
+            return res.status(400).json({
+                message: 'Wrong Password'
+            })
+        }
+    } catch (error) {
         return res.status(400).json({
-            message: 'Wrong Password'
+            message: 'Error while loggin in'
         })
     }
-
-    return res.status(400).json({
-        message: 'Error while loggin in'
-    })
 }
 
 
