@@ -7,7 +7,7 @@ const router = express.Router()
 router.route('/signup').post(resgisterUser)
 router.route('/signin').post(authUser)
 router.route('/').put(authMiddleware,updateUser)
-router.route('/bulk').get(findUser)
+router.route('/bulk').get(authMiddleware,findUser)
 
 
 module.exports = router 

@@ -97,16 +97,25 @@ const updateUser = async (req, res) => {
 
 const findUser = async (req, res) => {
     const filter = req.query.filter || ""
+    const loggedUserId = req.user._id
     const users = await User.find({
-        $or: [{
-            firstName: {
-                "$regex": filter
-            }
-        }, {
-            lastName: {
-                "$regex": filter
-            }
-        }]
+        $and: [{
+            _id: { $ne: loggedUserId }
+        },
+        {
+            $or: [{
+                firstName: {
+                    "$regex": filter,
+                    "$options": "i" //<-- option for case insensitvee
+                }
+            }, {
+                lastName: {
+                    "$regex": filter,
+                    "$options": "i"
+                }
+            }]
+        }
+        ]
     })
     if (users) {
         res.json({
