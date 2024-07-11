@@ -1,3 +1,4 @@
+const Account = require("../models/accountModel")
 const User = require("../models/userModel")
 const { generateToken } = require("../utils/generateToken")
 const { createUser, signInBody, updateBody } = require("../zodValidation/userSchema")
@@ -15,7 +16,7 @@ const resgisterUser = async (req, res) => {
     }
     const { userName, firstName, lastName, password } = req.body
 
-    const userExists = await User.find({ userName })
+    const userExists = await User.findOne({ userName })
     if (userExists) {
         res.status(400).send({ message: 'Email already taken' })
         return
@@ -23,6 +24,11 @@ const resgisterUser = async (req, res) => {
 
     const user = await User.create({
         userName, firstName, lastName, password
+    })
+
+    await Account.create({
+        userId,
+        balance: Math.floor(Math.random() * 10001)
     })
 
     if (user) {
@@ -49,7 +55,7 @@ const authUser = async (req, res) => {
         })
     }
 
-    const user = await User.find({ userName })
+    const user = await User.findOne({ userName })
     if (user && (await user.matchPassword(password))) {
         res.json({
             message: 'User Successfully logged',
@@ -111,5 +117,28 @@ const findUser = async (req, res) => {
     }
 }
 
+const getBalance = async (req, res) => {
+    const { _id: userId } = req.user
 
-module.exports = { resgisterUser, authUser, updateUser, findUser }
+    const account = await Account.findOne({ userId })
+
+    try {
+        if (account) {
+            res.status(200).json({
+                balance: account.balance
+            })
+        }
+    } catch (error) {
+        res.status(500).json({
+            message: 'something went wrong'
+        })
+    }
+}
+
+const transferBalance = async(req, res) =>{
+
+}
+
+
+
+module.exports = { resgisterUser, authUser, updateUser, findUser, getBalance ,transferBalance}

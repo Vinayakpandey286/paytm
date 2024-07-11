@@ -19,7 +19,7 @@ const authMiddleware = async (req, res, next) => {
 
     if (!token) {
         res.status(401)
-        throw new Error("Not Authorised, Token Failed")
+        throw new Error("Not Token")
     }
 }
 
