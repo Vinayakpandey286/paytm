@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose")
 const Account = require("../models/accountModel")
 const User = require("../models/userModel")
 const { generateToken } = require("../utils/generateToken")
@@ -14,20 +15,20 @@ const resgisterUser = async (req, res) => {
         })
         return
     }
-    const { userName, firstName, lastName, password } = req.body
+    const { email, firstName, lastName, password } = req.body
 
-    const userExists = await User.findOne({ userName })
+    const userExists = await User.findOne({ email })
     if (userExists) {
         res.status(400).send({ message: 'Email already taken' })
         return
     }
 
     const user = await User.create({
-        userName, firstName, lastName, password
+        email, firstName, lastName, password
     })
 
     await Account.create({
-        userId,
+        userId:user._id,
         balance: Math.floor(Math.random() * 10001)
     })
 
@@ -35,7 +36,7 @@ const resgisterUser = async (req, res) => {
         res.status(201).json({
             _id: user._id,
             message: 'User Created Successfully',
-            userName: user.userName,
+            email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
             token: generateToken(user._id)
@@ -44,7 +45,7 @@ const resgisterUser = async (req, res) => {
 }
 
 const authUser = async (req, res) => {
-    const { userName, password } = req.body
+    const { email, password } = req.body
     const payload = req.body
 
     const parsedPayload = signInBody.safeParse(payload)
@@ -55,7 +56,7 @@ const authUser = async (req, res) => {
         })
     }
 
-    const user = await User.findOne({ userName })
+    const user = await User.findOne({ email })
     if (user && (await user.matchPassword(password))) {
         res.json({
             message: 'User Successfully logged',
@@ -108,7 +109,7 @@ const findUser = async (req, res) => {
     if (users) {
         res.json({
             user: users.map(user => ({
-                username: user.username,
+                email: user.email,
                 firstName: user.firstName,
                 lastName: user.lastName,
                 _id: user._id
@@ -135,10 +136,47 @@ const getBalance = async (req, res) => {
     }
 }
 
-const transferBalance = async(req, res) =>{
+const transferBalance = async (req, res) => {
+    const { _id: userId } = req.user
 
+    const { amount, to } = req.body
+
+    try {
+        const session = await mongoose.startSession()
+
+        session.startTransaction()
+
+        const fromAccount = await Account.findOne({ userId }).session(session)
+
+        if (!fromAccount && fromAccount.balance < amount) {
+            await session.abortTransaction()
+            return res.status(403).json({
+                message: 'Inavlid account or Insufficient Balance'
+            })
+        }
+
+        const toAccount = await Account.findOne({ userId: to }).session(session)
+
+        if (!toAccount) {
+            await session.abortTransaction()
+            return res.status(403).json({
+                message: 'Not a Valid Recepient'
+            })
+        }
+
+        await Account.updateOne({ userId }, { $inc: { balance: -amount } }).session(session)
+        await Account.updateOne({ userId: to }, { $inc: { balance: amount } }).session(session)
+
+        await session.commitTransaction()
+
+        res.json({
+            message: 'Transfer Successfull'
+        })
+    } catch (error) {
+        res.status(400).json({ message: "something went wrong" })
+    }
 }
 
 
 
-module.exports = { resgisterUser, authUser, updateUser, findUser, getBalance ,transferBalance}
+module.exports = { resgisterUser, authUser, updateUser, findUser, getBalance, transferBalance }

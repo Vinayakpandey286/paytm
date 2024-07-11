@@ -10,4 +10,4 @@ router.route('/transfer').get(authMiddleware, transferBalance)
 
 
 
-module.express = router
+module.exports = router
