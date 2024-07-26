@@ -6,6 +6,7 @@ import { InputBox } from "../components/InputBox";
 import { SubHeading } from "../components/SubHeading";
 import axios from "axios";
 import { routes } from "../utils/routes";
+import { useNavigate } from "react-router-dom";
 
 export const Signup = () => {
   const [firstName, setFirstName] = useState("");
@@ -13,15 +14,20 @@ export const Signup = () => {
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
 
+  const navigate = useNavigate();
+
   const registerUser = async () => {
-    const response  = await axios.post(`${routes.baseUrl}${routes.signup}`, {
+    const response = await axios.post(`${routes.baseUrl}${routes.signup}`, {
       email,
       firstName,
       lastName,
       password,
     });
 
-    localStorage.setItem("paytmToken",response.data.token)
+    if (response?.data?.token) {
+      localStorage.setItem("paytmToken", response.data.token);
+      navigate("/dashboard");
+    }
   };
   return (
     <div className="bg-slate-300 h-screen flex justify-center">
