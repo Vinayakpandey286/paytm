@@ -1,35 +1,48 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "./Button";
 import { routes } from "../utils/routes";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { debounce } from "../utils/utils";
 
 export const Users = () => {
   // Replace with backend call
   const [users, setUsers] = useState([]);
   const [filter, setFilter] = useState("");
 
-  useEffect(() => {
-    const getUsers = async () => {
-      try {
-        let token = localStorage.getItem("paytmToken");
-        const config = {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        };
-        const response = await axios.get(
-          `${routes.baseUrl}${routes.findUser}?filter=` + filter,
-          config
-        );
-        setUsers(response.data.user);
-      } catch (error) {
-        console.log(error);
-      }
-    };
+  const getUsers = async (searchValue="") => {
+    try {
+      let token = localStorage.getItem("paytmToken");
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const response = await axios.get(
+        `${routes.baseUrl}${routes.findUser}?filter=` + searchValue,
+        config
+      );
+      setUsers(response.data.user);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
+  useEffect(() => {
     getUsers();
-  }, [filter]);
+  }, []);
+
+  const debounceSearch = useCallback(
+    debounce((searchValue) => {
+      getUsers(searchValue);
+    }, 2000),
+    []
+  );
+
+  const handleSearch = (searchInput) => {
+    setFilter(searchInput);
+    debounceSearch(searchInput);
+  };
 
   return (
     <>
@@ -37,7 +50,7 @@ export const Users = () => {
       <div className="my-2">
         <input
           onChange={(e) => {
-            setFilter(e.target.value);
+            handleSearch(e.target.value);
           }}
           type="text"
           placeholder="Search users..."
@@ -45,8 +58,8 @@ export const Users = () => {
         ></input>
       </div>
       <div>
-        {users.map((user) => (
-          <User user={user} />
+        {users.map((user, index) => (
+          <User user={user} key={index} />
         ))}
       </div>
     </>
@@ -57,7 +70,7 @@ function User({ user }) {
   const navigate = useNavigate();
 
   const handleSendMoney = () => {
-    navigate(`/send?userId=${user._id}&name=${user.firstName}`)
+    navigate(`/send?userId=${user._id}&name=${user.firstName}`);
   };
   return (
     <div className="flex justify-between">
